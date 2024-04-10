@@ -17,7 +17,7 @@ class OutputFormat(Enum):
     JSON = "json"
 
     def __str__(self):
-        """For rendering properly in argparse help."""
+        """For rendering properly in help output."""
         return self.value.lower()
 
 

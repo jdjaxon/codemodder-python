@@ -15,85 +15,31 @@ class CLIArgs(BaseModel):
     """
     Data class to assist with parsing and validating CLI arguments.
     """
-
-    directory: Optional[str] = Field(None, description="Path to find files")
-    output: Optional[str] = Field(
-        None,
-        type=str,
-        description="Name of output file to produce",
-    )
-    output_format: str = Field(
-        "codetf",
-        type=str,
-        description="The format for the data output file",
-    )
-    dry_run: bool = Field(
-        False,
-        description="Do everything except make changes to files",
-    )
-    verbose: bool = Field(
-        False,
-        description="Print more to stdout",
-    )
-    log_format: str = Field(
-        "human",
-        description="The format for the log output",
-    )
-    project_name: Optional[str] = Field(
-        None,
-        description="Optional descriptive name for the project used in log output",
-    )
-    path_exclude: List[str] = Field(
-        DEFAULT_EXCLUDED_PATHS,
-        description="UNIX glob patterns to exclude",
-    )
-    path_include: List[str] = Field(
-        DEFAULT_INCLUDED_PATHS,
-        description="UNIX glob patterns to include",
-    )
-    max_workers: int = Field(
-        1,
-        description="Maximum number of workers (threads) to use",
-    )
-    sarif: List[str] | None = Field(
-        None,
-        description="Paths to SARIF files",
-    )
-    sonar_issues_json: List[str] | None = Field(
-        None,
-        description="Paths to Sonar issues JSON files",
-    )
-    sonar_hotspots_json: List[str] | None = Field(
-        None,
-        description="Paths to Sonar hotspots JSON files",
-    )
-    defectdojo_findings_json: List[str] | None = Field(
-        None,
-        description="Paths to DefectDojo's v2 Findings JSON files",
-    )
-    codemod_exclude: List[str] | None = Field(
-        None,
-        description="Codemod ID(s) to exclude",
-    )
-    codemod_include: List[str] | None = Field(
-        None,
-        description="Codemod ID(s) to include",
-    )
-    list: bool = Field(
-        False,
-        description="Print codemod names and exit",
-    )
-    describe: bool = Field(
-        False,
-        description="Print detailed codemod metadata and exit",
-    )
+    directory: Optional[str]
+    output: Optional[str]
+    output_format: str
+    dry_run: bool
+    verbose: bool
+    log_format: str
+    project_name: Optional[str]
+    path_exclude: List[str]
+    path_include: List[str]
+    max_workers: int
+    sarif: List[str] | None
+    sonar_issues_json: List[str] | None
+    sonar_hotspots_json: List[str] | None
+    defectdojo_findings_json: List[str] | None
+    codemod_exclude: List[str] | None
+    codemod_include: List[str] | None
+    list: bool
+    describe: bool
 
 
 class ClickCommandWithErrorLogging(click.Command):
     """
     Command class wrapper to handle error logging.
     """
-    def invoke(self, ctx: click.Context):
+    def invoke(self, ctx):
         try:
             return super().invoke(ctx)
         except click.ClickException as err:

@@ -142,7 +142,11 @@ def run(original_args) -> int:
     codemod_registry = registry.load_registered_codemods()
 
     # A little awkward, but we need the codemod registry in order to validate potential arguments
-    argv: CLIArgs = parse_args(original_args, obj={'codemod_registry': codemod_registry})
+    argv = parse_args(
+        original_args,
+        obj={'codemod_registry': codemod_registry},
+        standalone_mode=False
+    )
     if not os.path.exists(argv.directory):
         logger.error(
             "given directory '%s' doesn't exist or can’t be read",

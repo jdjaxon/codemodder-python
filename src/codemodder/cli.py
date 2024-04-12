@@ -3,7 +3,7 @@ import sys
 from typing import List, Optional
 
 import click
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 
 from codemodder import __version__
 from codemodder.code_directory import DEFAULT_EXCLUDED_PATHS, DEFAULT_INCLUDED_PATHS
@@ -15,6 +15,7 @@ class CLIArgs(BaseModel):
     """
     Data class to assist with parsing and validating CLI arguments.
     """
+
     directory: Optional[str]
     output: Optional[str]
     output_format: str
@@ -39,6 +40,7 @@ class ClickCommandWithErrorLogging(click.Command):
     """
     Command class wrapper to handle error logging.
     """
+
     def invoke(self, ctx):
         try:
             return super().invoke(ctx)
@@ -149,7 +151,7 @@ def parse_args(ctx, **kwargs):
     Parse CLI arguments and options using the provided context.
     """
     parsed_args = CLIArgs(**kwargs)
-    codemod_registry: CodemodRegistry = ctx.obj['codemod_registry']
+    codemod_registry: CodemodRegistry = ctx.obj["codemod_registry"]
 
     if parsed_args.list:
         for codemod_id in sorted(codemod_registry.ids):

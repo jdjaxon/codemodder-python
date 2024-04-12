@@ -50,7 +50,7 @@ class ClickCommandWithErrorLogging(click.Command):
             sys.exit(3)
         except Exception as err:
             click.echo(ctx.get_help())
-            logger.error("Unhandled exception: %s", err)
+            logger.error("Unknown exception: %s", err)
             sys.exit(3)
 
 
@@ -151,6 +151,9 @@ def parse_args(ctx, **kwargs):
     Parse CLI arguments and options using the provided context.
     """
     parsed_args = CLIArgs(**kwargs)
+    if not parsed_args.directory and not parsed_args.list and not parsed_args.describe:
+        raise click.UsageError("You must provide a 'directory'.")
+
     codemod_registry: CodemodRegistry = ctx.obj["codemod_registry"]
 
     if parsed_args.list:

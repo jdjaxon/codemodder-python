@@ -167,9 +167,7 @@ def run(original_args) -> int:
     log_section("startup")
     logger.info("codemodder: python/%s", __version__)
     logger.info("command: %s %s", Path(sys.argv[0]).name, " ".join(original_args))
-
-    # TODO: this should be dict[str, list[Path]]
-    tool_result_files_map: DefaultDict[str, list[str]] = detect_sarif_tools(
+    tool_result_files_map: DefaultDict[str, List[Path]] = detect_sarif_tools(
         [Path(name) for name in argv.sarif or []]
     )
     tool_result_files_map["sonar"].extend(argv.sonar_issues_json or [])

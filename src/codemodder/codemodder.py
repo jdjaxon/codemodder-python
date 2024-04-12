@@ -3,11 +3,12 @@ import itertools
 import logging
 import os
 import sys
+from collections import defaultdict
 from pathlib import Path
-from typing import DefaultDict, Sequence
+from typing import DefaultDict, Sequence, List, Optional
 
 from codemodder import __version__, registry
-from codemodder.cli import parse_args, CLIArgs
+from codemodder.cli import parse_args
 from codemodder.code_directory import match_files
 from codemodder.codemods.api import BaseCodemod
 from codemodder.codemods.semgrep import SemgrepRuleDetector
@@ -35,7 +36,10 @@ def find_semgrep_results(
     codemods: Sequence[BaseCodemod],
     files_to_analyze: list[Path] | None = None,
 ) -> ResultSet:
-    """Run semgrep once with all configuration files from all codemods and return a set of applicable rule IDs"""
+    """
+    Run semgrep once with all configuration files from all codemods
+    and return a set of applicable rule IDs.
+    """
     yaml_files = list(
         itertools.chain.from_iterable(
             [
@@ -116,18 +120,19 @@ def apply_codemods(
         context.log_changes(codemod.id)
 
 
-def record_dependency_update(dependency_results: dict[Dependency, PackageStore | None]):
+def record_dependency_update(dependency_results: dict[Dependency, Optional[PackageStore]]):
+    """
+    Records dependencies to the log files.
+    """
     # TODO populate dependencies in CodeTF here
-    inverse: dict[None | str, list[Dependency]] = {}
-    for k, v in dependency_results.items():
-        inv_key = str(v.file) if v else None
-        if inv_key in inverse:
-            inverse.get(inv_key, []).append(k)
-        else:
-            inverse[inv_key] = [k]
+    inverse: DefaultDict[Optional[str], List[Dependency]] = defaultdict(list)
+    # inverse: dict[None | str, list[Dependency]] = {}
+    for dep, pkg_store in dependency_results.items():
+        inv_key = str(pkg_store.file) if pkg_store else None
+        inverse[inv_key].append(dep)
 
-    for file in inverse.keys():
-        str_list = str([d.requirement.name for d in inverse[file]])[2:-2]
+    for file, deps in inverse.items():
+        str_list = ', '.join(dep.requirement.name for dep in deps)
         if file:
             logger.debug(
                 "The following dependencies were added to '%s': %s", file, str_list
@@ -143,10 +148,13 @@ def run(original_args) -> int:
 
     # A little awkward, but we need the codemod registry in order to validate potential arguments
     argv = parse_args(
-        original_args,
-        obj={'codemod_registry': codemod_registry},
-        standalone_mode=False
+        original_args, obj={"codemod_registry": codemod_registry}, standalone_mode=False
     )
+
+    # This is the case where '--help' is passed and a 0 is returned from parse_args
+    if isinstance(argv, int):
+        sys.exit(argv)
+
     if not os.path.exists(argv.directory):
         logger.error(
             "given directory '%s' doesn't exist or can’t be read",

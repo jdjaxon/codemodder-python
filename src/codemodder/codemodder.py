@@ -36,7 +36,7 @@ def find_semgrep_results(
     files_to_analyze: list[Path] | None = None,
 ) -> ResultSet:
     """Run semgrep once with all configuration files from all codemods and return a set of applicable rule IDs"""
-    yaml_files = list(
+    if not (yaml_files := list(
         itertools.chain.from_iterable(
             [
                 codemod.detector.get_yaml_files(codemod.name)
@@ -45,8 +45,7 @@ def find_semgrep_results(
                 and isinstance(codemod.detector, SemgrepRuleDetector)
             ]
         )
-    )
-    if not yaml_files:
+    )):
         return ResultSet()
 
     return run_semgrep(context, yaml_files, files_to_analyze)
@@ -186,17 +185,13 @@ def run(original_args) -> int:
         sast_only=argv.sonar_issues_json or argv.sarif,
     )
 
-    included_paths = argv.path_include or codemod_registry.default_include_paths
-
     log_section("setup")
     log_list(logging.INFO, "running", codemods_to_run, predicate=lambda c: c.id)
-    log_list(logging.INFO, "including paths", included_paths)
+    log_list(logging.INFO, "including paths", argv.path_include)
     log_list(logging.INFO, "excluding paths", argv.path_exclude)
 
     files_to_analyze: list[Path] = match_files(
-        context.directory,
-        argv.path_exclude,
-        included_paths,
+        context.directory, argv.path_exclude, argv.path_include
     )
 
     full_names = [str(path) for path in files_to_analyze]
